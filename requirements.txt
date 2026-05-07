@@ -1,0 +1,11 @@
+django>=5.0
+djangorestframework
+django-cors-headers
+python-dotenv
+google-genai
+openpyxl
+requests
+gunicorn
+psycopg2-binary
+dj-database-url
+whitenoise
