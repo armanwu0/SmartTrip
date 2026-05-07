@@ -5,7 +5,7 @@ import { getDestinationDetail } from '../api';
 function DestinationDetails() {
   const { id } = useParams();
   const location = useLocation();
-  const {} = location.state || {};
+  const { tripData } = location.state || {};
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
