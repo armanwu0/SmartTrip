@@ -8,7 +8,7 @@ const api = axios.create({
 });
 
 export const getRecommendations = async (tripData) => {
-  const response = await api.post('/recommend/', tripData);
+  const response = await api.post('/recommendations/', tripData);
   return response.data;
 };
 
