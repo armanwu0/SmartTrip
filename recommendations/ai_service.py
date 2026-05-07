@@ -58,7 +58,7 @@ Respond ONLY with a valid JSON array (no markdown, no extra text) like this:
     if client:
         try:
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-1.5-flash-8b',
                 contents=prompt
             )
             text = response.text.strip()
@@ -123,7 +123,7 @@ Respond ONLY with a valid JSON object (no markdown):
     if client:
         try:
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-1.5-flash-8b',
                 contents=prompt
             )
             text = response.text.strip()
