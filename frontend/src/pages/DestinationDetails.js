@@ -43,7 +43,7 @@ function DestinationDetails() {
     );
   }
 
-  const destName = details?.destination_name || recommendation?.destination_name || 'Destination';
+  const destName = details?.destination_name || tripData?.destination_name || 'Destination';
   const destDetails = details?.details || {};
   const { tourist_spots = [], local_food = [], transport_info = {}, accommodation_options = [], travel_tips = [], emergency_info = {} } = destDetails;
 
