@@ -8,8 +8,13 @@ const api = axios.create({
 });
 
 export const getRecommendations = async (tripData) => {
-  const response = await api.post('/recommendations/', tripData);
-  return response.data;
+  try {
+    const response = await api.post('/recommendations/', tripData);
+    return response.data;
+  } catch (error) {
+    console.error('Recommendation API Error:', error.response?.data || error.message);
+    throw error;
+  }
 };
 
 export const getDestinationDetail = async (recommendationId) => {
