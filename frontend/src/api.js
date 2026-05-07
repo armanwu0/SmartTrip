@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'https://smarttrip-uumq.onrender.com';
+const API_BASE = process.env.REACT_APP_API_URL || 'https://smarttrip-uumq.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -8,7 +8,7 @@ const api = axios.create({
 });
 
 export const getRecommendations = async (tripData) => {
-  const response = await api.post('/recommendations/', tripData);
+  const response = await api.post('/recommend/', tripData);
   return response.data;
 };
 
