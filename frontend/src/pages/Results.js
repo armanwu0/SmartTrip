@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../AuthContext';
+import { saveTrip, addToWishlist } from '../api';
 
 const EMOJI_MAP = {
   beach: '🏝', adventure: '🧗', culture: '🏛', food: '🍜', nature: '🌿',
@@ -20,7 +22,11 @@ function getEmoji(destination) {
 function Results() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
   const { result, tripData } = location.state || {};
+  const [savedIds, setSavedIds] = useState(new Set());
+  const [wishlisted, setWishlisted] = useState(new Set());
+  const [savingId, setSavingId] = useState(null);
 
   if (!result) {
     return (
@@ -33,6 +39,37 @@ function Results() {
 
   const { recommendations = [], user_name } = result;
 
+  const normalizeHighlights = (value) => {
+    if (Array.isArray(value)) return value.filter(Boolean);
+    if (typeof value === 'string') return value.split('|').map(item => item.trim()).filter(Boolean);
+    return [];
+  };
+
+  const handleSaveTrip = async (rec) => {
+    if (!isLoggedIn) { navigate('/auth'); return; }
+    setSavingId(rec.id);
+    try {
+      await saveTrip({
+        destination_name: rec.destination_name,
+        country: rec.country,
+        summary: rec.summary,
+        estimated_cost: rec.estimated_cost,
+        best_time: rec.best_time,
+        trip_data: tripData || {},
+      });
+      setSavedIds(prev => new Set([...prev, rec.id]));
+    } catch {}
+    setSavingId(null);
+  };
+
+  const handleWishlist = async (rec) => {
+    if (!isLoggedIn) { navigate('/auth'); return; }
+    try {
+      await addToWishlist({ destination_name: rec.destination_name, country: rec.country });
+      setWishlisted(prev => new Set([...prev, rec.id]));
+    } catch {}
+  };
+
   return (
     <div className="results-wrapper">
       {/* Hero */}
@@ -44,14 +81,8 @@ function Results() {
       <div className="results-container">
         {/* Trip summary */}
         <div style={{
-          background: 'white',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '16px 24px',
-          marginBottom: 28,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 20
+          background: 'white', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)',
+          padding: '16px 24px', marginBottom: 28, display: 'flex', flexWrap: 'wrap', gap: 20
         }}>
           {[
             { label: 'Budget', value: `${tripData?.currency} ${tripData?.budget}` },
@@ -67,7 +98,6 @@ function Results() {
           ))}
         </div>
 
-        {/* Recommendation cards */}
         {recommendations.map((rec, i) => (
           <div key={rec.id || i} className="result-card">
             <div className="result-card-header">
@@ -79,7 +109,7 @@ function Results() {
                 <div className="country">📍 {rec.country}</div>
                 <p className="summary">{rec.summary}</p>
                 <div className="result-highlights">
-                  {(rec.highlights || []).map((h, j) => (
+                  {normalizeHighlights(rec.highlights).map((h, j) => (
                     <span key={j} className="highlight-tag">✓ {h}</span>
                   ))}
                 </div>
@@ -101,20 +131,36 @@ function Results() {
               </div>
             </div>
 
-            <div className="result-card-footer">
+            <div className="result-card-footer" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <button
                 className="btn btn-outline"
                 onClick={() => navigate(`/destination/${rec.id}`, { state: { recommendation: rec, tripData } })}
               >
                 View Full Details →
               </button>
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => handleSaveTrip(rec)}
+                disabled={savingId === rec.id || savedIds.has(rec.id)}
+                style={{ color: savedIds.has(rec.id) ? 'var(--primary)' : 'var(--text-secondary)' }}
+              >
+                {savedIds.has(rec.id) ? '✓ Saved' : savingId === rec.id ? 'Saving...' : '🔖 Save Trip'}
+              </button>
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => handleWishlist(rec)}
+                disabled={wishlisted.has(rec.id)}
+                style={{ color: wishlisted.has(rec.id) ? '#e11d48' : 'var(--text-secondary)' }}
+              >
+                {wishlisted.has(rec.id) ? '❤️ Wishlisted' : '🤍 Wishlist'}
+              </button>
             </div>
           </div>
         ))}
 
-        {/* Actions */}
         <div style={{ textAlign: 'center', marginTop: 32, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link to="/plan" className="btn btn-primary btn-lg">🔄 Plan Another Trip</Link>
+          {isLoggedIn && <Link to="/dashboard" className="btn btn-ghost btn-lg">📁 My Dashboard</Link>}
           <Link to="/" className="btn btn-ghost btn-lg">← Back to Home</Link>
         </div>
 
